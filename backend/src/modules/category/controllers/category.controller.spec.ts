@@ -1,0 +1,154 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { JwtService } from '@nestjs/jwt';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { CategoryController } from './category.controller';
+import { CreateCategoryCommand } from '../commands/impl/create-category.command';
+import { UpdateCategoryCommand } from '../commands/impl/update-category.command';
+import { DeleteCategoryCommand } from '../commands/impl/delete-category.command';
+import { GetCategoriesQuery } from '../queries/impl/get-categories.query';
+import { GetCategoryByIdQuery } from '../queries/impl/get-category-by-id.query';
+import { User } from '../../user/entities/user.entity';
+import { UserService } from '../../user/services/user.service';
+
+describe('CategoryController', () => {
+  let controller: CategoryController;
+  let commandBus: CommandBus;
+  let queryBus: QueryBus;
+
+  const mockCategory = {
+    id: 1,
+    name: 'Test Category',
+    slug: 'test-category',
+    description: 'Test Description',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [CategoryController],
+      providers: [
+        {
+          provide: CommandBus,
+          useValue: {
+            execute: jest.fn(),
+          },
+        },
+        {
+          provide: QueryBus,
+          useValue: {
+            execute: jest.fn(),
+          },
+        },
+        {
+          provide: JwtService,
+          useValue: {
+            sign: jest.fn(),
+            verify: jest.fn(),
+          },
+        },
+        {
+          provide: UserService,
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
+      ],
+    })
+    .useMocker((token) => {
+      if (token === 'JwtAuthGuard') {
+        return { canActivate: () => true };
+      }
+    })
+    .compile();
+
+    controller = module.get<CategoryController>(CategoryController);
+    commandBus = module.get<CommandBus>(CommandBus);
+    queryBus = module.get<QueryBus>(QueryBus);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe('findAll', () => {
+    it('should return an array of categories', async () => {
+      const categories = [mockCategory];
+      jest.spyOn(queryBus, 'execute').mockResolvedValue(categories);
+
+      const result = await controller.findAll();
+
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetCategoriesQuery());
+      expect(result).toEqual(categories);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a category by id', async () => {
+      jest.spyOn(queryBus, 'execute').mockResolvedValue(mockCategory);
+
+      const result = await controller.findOne(1);
+
+      expect(queryBus.execute).toHaveBeenCalledWith(new GetCategoryByIdQuery(1));
+      expect(result).toEqual(mockCategory);
+    });
+  });
+
+  describe('create', () => {
+    it('should create a new category', async () => {
+      const createDto = {
+        name: 'Test Category',
+        slug: 'test-category',
+        description: 'Test Description',
+      };
+
+      jest.spyOn(commandBus, 'execute').mockResolvedValue(mockCategory);
+
+      const result = await controller.create(createDto);
+
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new CreateCategoryCommand(createDto),
+      );
+      expect(result).toEqual(mockCategory);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a category', async () => {
+      const updateDto = {
+        name: 'Updated Category',
+      };
+
+      const updatedCategory = { ...mockCategory, ...updateDto };
+      jest.spyOn(commandBus, 'execute').mockResolvedValue(updatedCategory);
+
+      const result = await controller.update(1, updateDto);
+
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new UpdateCategoryCommand(1, updateDto),
+      );
+      expect(result).toEqual(updatedCategory);
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a category', async () => {
+      const response = { message: 'Category deleted successfully' };
+      jest.spyOn(commandBus, 'execute').mockResolvedValue(response);
+
+      const result = await controller.remove(1);
+
+      expect(commandBus.execute).toHaveBeenCalledWith(
+        new DeleteCategoryCommand(1),
+      );
+      expect(result).toEqual(response);
+    });
+  });
+}); 
