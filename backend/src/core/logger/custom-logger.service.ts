@@ -1,79 +1,137 @@
 import { Injectable, LoggerService } from '@nestjs/common';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
+import * as Transport from 'winston-transport';
+import { ConfigService } from '@nestjs/config';
+
+// Custom Transport cho Seq
+class SeqTransport extends Transport {
+  private seqUrl: string;
+  private apiKey: string;
+
+  constructor(opts: any) {
+    super(opts);
+    this.seqUrl = opts.seqUrl;
+    this.apiKey = opts.apiKey;
+  }
+
+  async log(info: any, callback: () => void) {
+    setImmediate(() => {
+      this.emit('logged', info);
+    });
+
+    const { level, message, ...meta } = info;
+    
+    try {
+      await fetch(`${this.seqUrl}/api/events/raw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Seq-ApiKey': this.apiKey
+        },
+        body: JSON.stringify({
+          Events: [{
+            Timestamp: new Date().toISOString(),
+            Level: level.toUpperCase(),
+            MessageTemplate: message,
+            Properties: meta
+          }]
+        })
+      });
+    } catch (error) {
+      console.error('Error sending log to Seq:', error);
+    }
+
+    callback();
+  }
+}
 
 @Injectable()
 export class CustomLoggerService implements LoggerService {
   private logger: winston.Logger;
 
-  constructor() {
-    // Định dạng log
-    const { combine, timestamp, printf, colorize } = winston.format;
+  constructor(private configService: ConfigService) {
+    const { combine, timestamp, printf, colorize, json } = winston.format;
     
-    // Format chi tiết hơn với thêm trace
-    const logFormat = printf(({ level, message, timestamp, trace }) => {
-      return `${timestamp} [${level}]: ${message}${trace ? `\n${trace}` : ''}`;
+    // Format chi tiết với metadata
+    const logFormat = printf(({ level, message, timestamp, ...metadata }) => {
+      let metaStr = '';
+      if (Object.keys(metadata).length > 0) {
+        metaStr = `\nMetadata: ${JSON.stringify(metadata, null, 2)}`;
+      }
+      return `${timestamp} [${level}]: ${message}${metaStr}`;
     });
 
     // Transport cho file thông thường
     const fileTransport = new winston.transports.DailyRotateFile({
       filename: 'logs/application-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
-      maxFiles: '14d', // Giữ log trong 14 ngày
-      maxSize: '20m',  // Mỗi file tối đa 20MB
-      level: 'debug', // Thay đổi level thành debug
+      maxFiles: '14d',
+      maxSize: '20m',
+      format: combine(
+        timestamp(),
+        json()
+      )
     });
 
-    // Transport riêng cho error
+    // Transport cho error
     const errorFileTransport = new winston.transports.DailyRotateFile({
       filename: 'logs/error-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
       maxFiles: '14d',
       maxSize: '20m',
       level: 'error',
+      format: combine(
+        timestamp(),
+        json()
+      )
     });
 
-    // Tạo logger
+    // Transport cho Seq
+    const seqTransport = new SeqTransport({
+      level: 'info',
+      seqUrl: this.configService.get('SEQ_URL') || 'http://localhost:5341',
+      apiKey: this.configService.get('SEQ_API_KEY')
+    });
+
     this.logger = winston.createLogger({
-      level: 'debug', // Thay đổi default level thành debug
+      level: 'debug',
       format: combine(
         timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         logFormat
       ),
       transports: [
-        // Ghi ra console
         new winston.transports.Console({
           format: combine(
             colorize(),
             timestamp(),
             logFormat
-          ),
-          level: 'debug', // Thay đổi console level thành debug
+          )
         }),
-        // Ghi ra file
         fileTransport,
-        errorFileTransport, // Thêm transport riêng cho error
-      ],
+        errorFileTransport,
+        seqTransport
+      ]
     });
   }
 
-  log(message: string, trace?: string) {
-    this.logger.info(message, { trace });
+  log(message: string, metadata?: any) {
+    this.logger.info(message, metadata);
   }
 
-  error(message: string, trace?: string) {
-    this.logger.error(message, { trace });
+  error(message: string, metadata?: any) {
+    this.logger.error(message, metadata);
   }
 
-  warn(message: string, trace?: string) {
-    this.logger.warn(message, { trace });
+  warn(message: string, metadata?: any) {
+    this.logger.warn(message, metadata);
   }
 
-  debug(message: string, trace?: string) {
-    this.logger.debug(message, { trace });
+  debug(message: string, metadata?: any) {
+    this.logger.debug(message, metadata);
   }
 
-  verbose(message: string, trace?: string) {
-    this.logger.verbose(message, { trace });
+  verbose(message: string, metadata?: any) {
+    this.logger.verbose(message, metadata);
   }
 } 

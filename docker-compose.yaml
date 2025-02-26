@@ -9,6 +9,26 @@ networks:
     driver: bridge
 
 services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "5000:5000"
+    restart: always
+    environment:
+      - DATABASE_HOST=postgres_db
+      - DATABASE_PORT=${POSTGRESQL_PORT}
+      - DATABASE_USERNAME=${POSTGRESQL_USERNAME}
+      - DATABASE_PASSWORD=${POSTGRESQL_PASSWORD}
+      - DATABASE_NAME=${POSTGRESQL_DATABASE}
+    depends_on:
+      - postgres_db
+    networks:
+      - docker-network
+    logging: *default-logging
+
   postgres_db:
     image: bitnami/postgresql:latest
     platform: linux/amd64 
