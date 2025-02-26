@@ -15,17 +15,17 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { CommentService } from '../services/comment.service';
 import { CreateCommentDto } from '../dto/create-comment.dto';
 import { UpdateCommentDto } from '../dto/update-comment.dto';
-import { AuthGuard } from '../../../core/guards/auth.guard';
-import { RolesGuard } from '../../../core/guards/role.guard';
-import { PermissionGuard } from '../../../core/helpers/check-permission.helper';
-
+import { Public } from 'src/core/decorators/public.decorator';
+import { Role } from 'src/core/enums/role.enum';
+import { Roles } from 'src/core/decorators/roles.decorator';
+import { AuthGuard } from 'src/core/guards/auth.guard';
 @ApiTags('Comments')
 @Controller('api/v1/comments')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   @Post()
-  @UseGuards(AuthGuard, new RolesGuard(['ADMIN']), PermissionGuard)
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new comment' })
   create(@Body() createCommentDto: CreateCommentDto, @Request() req) {
@@ -33,6 +33,7 @@ export class CommentController {
   }
 
   @Get('post/:postId')
+  @Public()
   @ApiOperation({ summary: 'Get all comments for a post' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -45,13 +46,14 @@ export class CommentController {
   }
 
   @Get(':id')
+  @Public()
   @ApiOperation({ summary: 'Get comment by id' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.commentService.findOne(id);
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard, new RolesGuard(['ADMIN', 'MOD']), PermissionGuard)
+  @Roles(Role.ADMIN, Role.MOD)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update comment' })
   update(
@@ -63,7 +65,7 @@ export class CommentController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard, new RolesGuard(['ADMIN']), PermissionGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete comment' })
   remove(@Param('id', ParseIntPipe) id: number, @Request() req) {

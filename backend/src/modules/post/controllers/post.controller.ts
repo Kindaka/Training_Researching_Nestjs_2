@@ -18,17 +18,16 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { PostService } from '../services/post.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
-import { AuthGuard } from '../../../core/guards/auth.guard';
-import { PermissionGuard } from 'src/core/helpers/check-permission.helper';
-import { RolesGuard } from 'src/core/guards/role.guard';
-
+import { Role } from 'src/core/enums/role.enum';
+import { Roles } from 'src/core/decorators/roles.decorator';
+import { Public } from 'src/core/decorators/public.decorator';
 @ApiTags('Posts')
 @Controller('api/v1/posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post('create-post')
-  @UseGuards(AuthGuard, new RolesGuard(['ADMIN']), PermissionGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new post' })
   create(@Body() createPostDto: CreatePostDto, @Request() req) {
@@ -36,6 +35,7 @@ export class PostController {
   }
 
   @Get('get-all-posts')
+  @Public()
   @ApiOperation({ summary: 'Get all posts' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -47,13 +47,14 @@ export class PostController {
   }
 
   @Get('get-post-by-id/:id')
+  @Public()
   @ApiOperation({ summary: 'Get post by id' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.postService.findOne(id);
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard, new RolesGuard(['ADMIN', 'MOD']), PermissionGuard)
+  @Roles(Role.ADMIN, Role.MOD)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update post' })
   async update(
@@ -98,7 +99,7 @@ export class PostController {
   }
 
   @Delete('delete-post/:id')
-  @UseGuards(AuthGuard, new RolesGuard(['ADMIN']), PermissionGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete post' })
   remove(@Param('id', ParseIntPipe) id: number, @Request() req) {

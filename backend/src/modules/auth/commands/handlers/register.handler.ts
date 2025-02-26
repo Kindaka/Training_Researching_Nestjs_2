@@ -6,7 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterCommand } from '../impl/register.command';
 import { User } from '../../../user/entities/user.entity';
-import { UserRole } from '../../../user/entities/user.entity';
+import { Role } from '../../../../core/enums/role.enum';
 import { JwtPayload } from '../../interfaces/jwt-payload.interface';
 import { MailService } from '../../../mail/services/mail.service';
 import { CustomLoggerService } from '../../../../core/logger/custom-logger.service';
@@ -62,7 +62,7 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
         email: registerDto.email,
         fullName: registerDto.fullName,
         password: hashedPassword,
-        role: UserRole.USER,
+        role: Role.USER,
       });
 
       const savedUser = await this.userRepository.save(user);

@@ -1,18 +1,19 @@
 import { DataSource } from 'typeorm';
-import { User, UserRole } from '../../modules/user/entities/user.entity';
+import { User } from '../../modules/user/entities/user.entity';
 import { Post } from '../../modules/post/entities/post.entity';
 import { Category } from '../../modules/category/entities/category.entity';
 import { Tag } from '../../modules/tag/entities/tag.entity';
 import { Comment } from '../../modules/comment/entities/comment.entity';
 import * as bcrypt from 'bcrypt';
+import { Role } from '../../core/enums/role.enum';
 
 const AppDataSource = new DataSource({
     type: "postgres",
     host: "localhost",
     port: 35432,
-    username: "postgres", // thay đổi theo config của bạn
-    password: "123456", // thay đổi theo config của bạn
-    database: "postgres", // thay đổi theo config của bạn
+    username: "postgres", 
+    password: "123456", 
+    database: "postgres",
     entities: [User, Post, Category, Tag, Comment],
     synchronize: false,
 });
@@ -74,7 +75,7 @@ async function main() {
             email: 'admin@example.com',
             fullName: 'Admin User',
             password: adminPassword,
-            role: UserRole.ADMIN
+            role: Role.ADMIN
         });
         //Create mod user
         const modPassword = await bcrypt.hash('mod123', 10);
@@ -82,7 +83,7 @@ async function main() {
             email: 'mod@example.com',
             fullName: 'Mod User',
             password: modPassword,
-            role: UserRole.MOD
+            role: Role.MOD
         });
         // Create regular users
         const userPassword = await bcrypt.hash('user123', 10);
@@ -91,13 +92,13 @@ async function main() {
                 email: 'user1@example.com',
                 fullName: 'User One',
                 password: userPassword,
-                role: UserRole.USER
+                role: Role.USER
             },
             {
                 email: 'user2@example.com',
                 fullName: 'User Two',
                 password: userPassword,
-                role: UserRole.USER
+                role: Role.USER
             }
         ]);
         console.log('Users seeded');

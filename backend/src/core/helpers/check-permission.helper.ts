@@ -10,26 +10,3 @@ export class Permission{
         throw new BadRequestException('Bạn không có quyền thực hiện hành động này');
     }
 }
-
-@Injectable()
-export class PermissionGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
-
-  canActivate(context: ExecutionContext): boolean {
-    const { user, method } = context.switchToHttp().getRequest();
-
-    if (user?.role === 'ADMIN') {
-      return true;
-    }
-
-    if (user?.role === 'MOD') {
-      return ['PUT', 'PATCH'].includes(method);
-    }
-
-    if (user?.role === 'USER') {
-      return method === 'GET';
-    }
-
-    return false;
-  }
-}   

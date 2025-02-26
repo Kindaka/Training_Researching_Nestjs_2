@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, MinLength, IsString, Matches, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { UserRole } from '../entities/user.entity';
+import { Role } from '../../../core/enums/role.enum';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 
@@ -40,6 +40,6 @@ export class UpdateUserDto {
 
   @ApiPropertyOptional({ example: 'ADMIN, MOD, USER', description: 'Specify user role (Optional-Default: USER)' })
   @IsOptional()
-  role?: UserRole;
+  role?: Role;
 
 }

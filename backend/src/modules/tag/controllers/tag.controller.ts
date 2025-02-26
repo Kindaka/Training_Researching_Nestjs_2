@@ -6,7 +6,6 @@ import {
   Put,
   Param,
   Delete,
-  UseGuards,
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -14,17 +13,16 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { TagService } from '../services/tag.service';
 import { CreateTagDto } from '../dto/create-tag.dto';
 import { UpdateTagDto } from '../dto/update-tag.dto';
-import { AuthGuard } from '../../../core/guards/auth.guard';
-import { RolesGuard } from '../../../core/guards/role.guard';
-import { PermissionGuard } from '../../../core/helpers/check-permission.helper';
-
+import { Role } from 'src/core/enums/role.enum';
+import { Roles } from 'src/core/decorators/roles.decorator';
+import { Public } from 'src/core/decorators/public.decorator';
 @ApiTags('Tags')
 @Controller('api/v1/tags')
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 
   @Post()
-  @UseGuards(AuthGuard, new RolesGuard(['ADMIN']), PermissionGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new tag' })
   create(@Body() createTagDto: CreateTagDto) {
@@ -32,6 +30,7 @@ export class TagController {
   }
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Get all tags' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -43,13 +42,14 @@ export class TagController {
   }
 
   @Get(':id')
+  @Public()
   @ApiOperation({ summary: 'Get tag by id' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.tagService.findOne(id);
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard, new RolesGuard(['ADMIN', 'MOD']), PermissionGuard)
+  @Roles(Role.ADMIN, Role.MOD)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update tag' })
   update(
@@ -60,7 +60,7 @@ export class TagController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard, new RolesGuard(['ADMIN']), PermissionGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete tag' })
   remove(@Param('id', ParseIntPipe) id: number) {

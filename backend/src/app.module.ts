@@ -20,6 +20,7 @@ import { CustomLoggerService } from './core/logger/custom-logger.service';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RolesGuard } from './core/guards/roles.guard';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -42,6 +43,17 @@ import { RolesGuard } from './core/guards/roles.guard';
     TagModule,
     CommentModule,
     AuthModule,
+    JwtModule.registerAsync({
+      global: true,
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { 
+          expiresIn: '24h' 
+        },
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController, PostController],
   providers: [

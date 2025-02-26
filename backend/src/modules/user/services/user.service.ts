@@ -15,6 +15,8 @@ import { DeleteUserCommand } from '../commands/impl/delete-user.command';
 import { GetUsersQuery } from '../queries/impl/get-users.query';
 import { GetUserQuery } from '../queries/impl/get-user.query';
 import { GetUserByEmailQuery } from '../queries/impl/get-user-by-email.query';
+import { Role } from '../../../core/enums/role.enum';
+import { ForbiddenException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
@@ -37,7 +39,10 @@ export class UserService {
     return this.queryBus.execute(new GetUsersQuery());
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, currentUser: User) {
+    if (currentUser.id !== id && currentUser.role as Role !== Role.ADMIN) {
+      throw new ForbiddenException('You do not have permission to view this user');
+    }
     return this.queryBus.execute(new GetUserQuery(id));
   }
 

@@ -1,11 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateUserCommand } from '../impl/update-user.command';
 import { User } from '../../entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { Permission } from '../../../../core/helpers/check-permission.helper';
+import { Role } from '../../../../core/enums/role.enum';
 
 @CommandHandler(UpdateUserCommand)
 export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
@@ -19,7 +19,7 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
 
     // Không cho phép cập nhật role
     if (updateUserDto.role) {
-      throw new BadRequestException('You are not allowed to update the role');
+      throw new BadRequestException('Role cannot be updated through this endpoint');
     }
 
     // Tìm user cần update
@@ -28,8 +28,10 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
       throw new NotFoundException('User not found');
     }
 
-    // Kiểm tra quyền
-    Permission.check(id, currentUser);
+    // Kiểm tra quyền: chỉ admin hoặc chính user đó mới được update
+    if (currentUser.id !== user.id && currentUser.role as Role !== Role.ADMIN) {
+      throw new ForbiddenException('You do not have permission to update this user');
+    }
 
     // Update thông tin
     user = { ...user, ...updateUserDto };

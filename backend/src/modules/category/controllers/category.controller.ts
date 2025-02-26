@@ -12,7 +12,8 @@ import { DeleteCategoryCommand } from '../commands/impl/delete-category.command'
 import { GetCategoriesQuery } from '../queries/impl/get-categories.query';
 import { GetCategoryByIdQuery } from '../queries/impl/get-category-by-id.query';
 import { Roles } from 'src/core/decorators/roles.decorator';
-import { UserRole } from '../../user/entities/user.entity';
+import { Role } from 'src/core/enums/role.enum';
+import { Public } from 'src/core/decorators/public.decorator';
 @ApiTags('Categories')
 @ApiBearerAuth()
 @Controller('api/v1/categories')
@@ -22,12 +23,14 @@ export class CategoryController {
     private readonly queryBus: QueryBus,
   ) {}
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'Get all categories' })
   async findAll() {
     return this.queryBus.execute(new GetCategoriesQuery());
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get category by id' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -35,7 +38,7 @@ export class CategoryController {
   }
 
   @Post()
-  @Roles(UserRole.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create new category' })
   async create(@Body() createCategoryDto: CreateCategoryDto) {
@@ -45,7 +48,7 @@ export class CategoryController {
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMIN, UserRole.MOD)
+  @Roles(Role.ADMIN, Role.MOD)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update category' })
   async update(
@@ -58,7 +61,7 @@ export class CategoryController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete category' })
   async remove(@Param('id', ParseIntPipe) id: number) {
