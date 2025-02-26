@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { RegisterHandler } from './register.handler';
 import { RegisterCommand } from '../impl/register.command';
 import { User } from '../../../user/entities/user.entity';
-import { UserRole } from '../../../user/entities/user.entity';
+import { Role } from '../../../../core/enums/role.enum';
 
 jest.mock('bcrypt');
 
@@ -21,7 +21,7 @@ describe('RegisterHandler', () => {
     email: 'test@example.com',
     password: 'hashedPassword',
     fullName: 'Test User',
-    role: UserRole.USER,
+    role: Role.USER,
     posts: [],
     comments: [],
     createdAt: new Date(),
@@ -98,7 +98,7 @@ describe('RegisterHandler', () => {
       expect(userRepository.create).toHaveBeenCalledWith({
         ...registerDto,
         password: hashedPassword,
-        role: UserRole.USER,
+        role: Role.USER,
       });
       expect(userRepository.save).toHaveBeenCalled();
       expect(result).toEqual(expectedResponse);

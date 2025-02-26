@@ -9,7 +9,7 @@ import {
 import { UpdateUserHandler } from './update-user.handler';
 import { UpdateUserCommand } from '../impl/update-user.command';
 import { User } from '../../entities/user.entity';
-import { UserRole } from '../../entities/user.entity';
+import { Role } from '../../../../core/enums/role.enum';
 import * as bcrypt from 'bcrypt';
 
 jest.mock('bcrypt');
@@ -23,7 +23,7 @@ describe('UpdateUserHandler', () => {
     email: 'test@example.com',
     password: 'hashedPassword',
     fullName: 'Test User',
-    role: UserRole.USER,
+    role: Role.USER,
     posts: [],
     comments: [],
     createdAt: new Date(),
@@ -35,7 +35,7 @@ describe('UpdateUserHandler', () => {
     email: 'admin@example.com',
     password: 'hashedPassword',
     fullName: 'Admin User',
-    role: UserRole.ADMIN,
+    role: Role.ADMIN,
     posts: [],
     comments: [],
     createdAt: new Date(),
@@ -110,7 +110,7 @@ describe('UpdateUserHandler', () => {
     });
 
     it('should throw BadRequestException when trying to update role', async () => {
-      const updateDto = { role: UserRole.ADMIN };
+      const updateDto = { role: Role.ADMIN };
 
       await expect(
         handler.execute(new UpdateUserCommand(mockUser.id, updateDto, mockUser)),

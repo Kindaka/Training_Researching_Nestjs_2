@@ -25,6 +25,7 @@ export class TagController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new tag' })
+  // @ApiOkResponse(Tag)
   create(@Body() createTagDto: CreateTagDto) {
     return this.tagService.create(createTagDto);
   }

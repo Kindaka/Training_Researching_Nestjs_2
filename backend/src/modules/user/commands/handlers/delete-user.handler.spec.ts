@@ -5,7 +5,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { DeleteUserHandler } from './delete-user.handler';
 import { DeleteUserCommand } from '../impl/delete-user.command';
 import { User } from '../../entities/user.entity';
-import { UserRole } from '../../entities/user.entity';
+import { Role } from '../../../../core/enums/role.enum';
 
 describe('DeleteUserHandler', () => {
   let handler: DeleteUserHandler;
@@ -16,7 +16,7 @@ describe('DeleteUserHandler', () => {
     email: 'test@example.com',
     password: 'hashedPassword',
     fullName: 'Test User',
-    role: UserRole.USER,
+    role: Role.USER,
     posts: [],
     comments: [],
     createdAt: new Date(),
@@ -28,7 +28,7 @@ describe('DeleteUserHandler', () => {
     email: 'admin@example.com',
     password: 'hashedPassword',
     fullName: 'Admin User',
-    role: UserRole.ADMIN,
+    role: Role.ADMIN,
     posts: [],
     comments: [],
     createdAt: new Date(),

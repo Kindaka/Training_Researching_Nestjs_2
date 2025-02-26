@@ -29,9 +29,6 @@ RUN npm ci --only=production
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Copy necessary configuration files
-COPY .env* ./
-
 # Expose the port the app runs on
 EXPOSE 5000
 

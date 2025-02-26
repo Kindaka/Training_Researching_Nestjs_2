@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { GetUserByEmailHandler } from './get-user-by-email.handler';
 import { GetUserByEmailQuery } from '../impl/get-user-by-email.query';
 import { User } from '../../entities/user.entity';
-import { UserRole } from '../../entities/user.entity';
+import { Role } from '../../../../core/enums/role.enum';
 
 describe('GetUserByEmailHandler', () => {
   let handler: GetUserByEmailHandler;
@@ -15,7 +15,7 @@ describe('GetUserByEmailHandler', () => {
     email: 'test@example.com',
     password: 'hashedPassword',
     fullName: 'Test User',
-    role: UserRole.USER,
+    role: Role.USER,
     posts: [],
     comments: [],
     createdAt: new Date(),

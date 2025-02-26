@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginHandler } from './login.handler';
 import { LoginCommand } from '../impl/login.command';
 import { User } from '../../../user/entities/user.entity';
-import { UserRole } from '../../../user/entities/user.entity';
+import { Role } from '../../../../core/enums/role.enum';
 
 jest.mock('bcrypt');
 
@@ -21,7 +21,7 @@ describe('LoginHandler', () => {
     email: 'test@example.com',
     password: 'hashedPassword',
     fullName: 'Test User',
-    role: UserRole.USER,
+    role: Role.USER,
     posts: [],
     comments: [],
     createdAt: new Date(),

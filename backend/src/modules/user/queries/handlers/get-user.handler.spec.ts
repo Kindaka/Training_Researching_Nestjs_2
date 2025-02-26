@@ -5,7 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { GetUserHandler } from './get-user.handler';
 import { GetUserQuery } from '../impl/get-user.query';
 import { User } from '../../entities/user.entity';
-import { UserRole } from '../../entities/user.entity';
+import { Role } from '../../../../core/enums/role.enum';
 
 describe('GetUserHandler', () => {
   let handler: GetUserHandler;
@@ -16,7 +16,7 @@ describe('GetUserHandler', () => {
     email: 'test@example.com',
     password: 'hashedPassword',
     fullName: 'Test User',
-    role: UserRole.USER,
+    role: Role.USER,
     posts: [],
     comments: [],
     createdAt: new Date(),
