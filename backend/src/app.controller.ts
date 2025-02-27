@@ -1,5 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
 import { CustomLoggerService } from './core/logger/custom-logger.service';
+import { join } from 'path';
+import { Response } from 'express';
 
 @Controller()
 export class AppController {
@@ -14,5 +16,10 @@ export class AppController {
     this.logger.verbose('This is a verbose message');
     
     return 'Logs generated!';
+  }
+
+  @Get('test-client')
+  getTestClient(@Res() res: Response) {
+    return res.sendFile(join(__dirname, '..', 'public', 'test-client.html'));
   }
 }

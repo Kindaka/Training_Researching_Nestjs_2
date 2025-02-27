@@ -7,6 +7,8 @@ import { Category } from "../modules/category/entities/category.entity"
 import { Tag } from "../modules/tag/entities/tag.entity"
 import { Comment } from "../modules/comment/entities/comment.entity"
 import { join } from 'path';
+import { ChatRoom } from 'src/modules/chat/entities/chat-room.entity';
+import { ChatMessage } from 'src/modules/chat/entities/chat-message.entity';
 
 config();
 
@@ -19,7 +21,7 @@ export default new DataSource({
   username: configService.get('DB_USER'),
   password: configService.get('DB_PASSWORD'),
   database: configService.get('DB_NAME'),
-  entities: [User, Post, Category, Tag, Comment],
+  entities: [User, Post, Category, Tag, Comment, ChatRoom, ChatMessage],
   synchronize: configService.get('nodenv') === 'development',
   logging: configService.get('nodenv') === 'development',
   migrations: [join(__dirname, './migrations/*{.ts,.js}')],

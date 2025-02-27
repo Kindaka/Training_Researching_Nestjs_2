@@ -9,14 +9,14 @@ x-logging: &default-logging
 services:
   backend:
     build:
-      context: ./backend
+      context: ../backend
       dockerfile: Dockerfile
     container_name: backend
     ports:
       - "5000:5000"
     restart: always
     env_file:
-      - ./backend/.env.prod
+      - ../backend/.env.prod
     depends_on:
       - postgres_db
     networks:

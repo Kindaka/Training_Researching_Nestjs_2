@@ -22,6 +22,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { RolesGuard } from './core/guards/roles.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { LoggerMiddleware } from './core/middlewares/logger.middleware';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { LoggerMiddleware } from './core/middlewares/logger.middleware';
       }),
       inject: [ConfigService],
     }),
+    ChatModule,
   ],
   controllers: [AppController, PostController],
   providers: [

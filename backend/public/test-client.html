@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat WebSocket Test</title>
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    #messages { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    .message { margin-bottom: 5px; }
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+    input, button { padding: 8px; }
+    input { flex-grow: 1; }
+  </style>
+</head>
+<body>
+  <h1>Chat WebSocket Test</h1>
+  
+  <div class="controls">
+    <input id="token" placeholder="JWT Token" />
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+  </div>
+  
+  <div class="controls">
+    <input id="roomId" placeholder="Room ID" />
+    <button onclick="joinRoom()">Join Room</button>
+  </div>
+  
+  <div id="messages"></div>
+  
+  <div class="controls">
+    <input id="messageInput" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+  
+  <script>
+    let socket;
+    let currentRoomId = null;
+    let currentUser = null;
+    let token = null;
+    
+    function addMessage(text) {
+      const messagesDiv = document.getElementById('messages');
+      const messageElement = document.createElement('div');
+      messageElement.className = 'message';
+      messageElement.textContent = text;
+      messagesDiv.appendChild(messageElement);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function decodeToken(jwtToken) {
+      try {
+        const base64Url = jwtToken.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        return JSON.parse(jsonPayload);
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        return null;
+      }
+    }
+    
+    function connect() {
+      token = document.getElementById('token').value;
+      
+      if (!token) {
+        alert('Please enter a JWT token');
+        return;
+      }
+      
+      // Giải mã token để lấy thông tin user
+      currentUser = decodeToken(token);
+      console.log('Current user:', currentUser);
+      
+      if (!currentUser) {
+        alert('Invalid token');
+        return;
+      }
+      
+      // Kết nối đến namespace /chat
+      socket = io('http://localhost:5000/chat', {
+        extraHeaders: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      socket.on('connect', () => {
+        addMessage('Connected to server');
+        console.log('Connected with socket ID:', socket.id);
+      });
+      
+      socket.on('disconnect', () => {
+        addMessage('Disconnected from server');
+        currentRoomId = null;
+      });
+      
+      socket.on('error', (error) => {
+        addMessage(`Error: ${error.message}`);
+        console.error('Error:', error);
+      });
+      
+      socket.on('joinedRoom', (data) => {
+        addMessage(`Joined room: ${data.roomId} (${data.roomName})`);
+        currentRoomId = data.roomId;
+        console.log('Joined room data:', data);
+      });
+      
+      socket.on('newMessage', (data) => {
+        // Hiển thị tin nhắn với tên người gửi
+        const sender = data.fullName || data.username || `User ${data.userId}`;
+        const isCurrentUser = data.userId === currentUser.id;
+        addMessage(`${sender}${isCurrentUser ? ' (You)' : ''}: ${data.text}`);
+        console.log('New message:', data);
+      });
+      
+      socket.on('userJoined', (data) => {
+        // Hiển thị thông báo khi có người tham gia
+        const username = data.fullName || data.username || `User ${data.userId}`;
+        addMessage(`User joined: ${username}`);
+        console.log('User joined:', data);
+      });
+      
+      socket.on('userLeft', (data) => {
+        // Hiển thị thông báo khi có người rời đi
+        const displayName = data.fullName || data.username || `User ${data.userId}`;
+        addMessage(`User left: ${displayName}`);
+        console.log('User left:', data);
+      });
+      
+      // Debug: log tất cả các sự kiện
+      socket.onAny((eventName, ...args) => {
+        console.log(`Received event: ${eventName}`, args);
+      });
+    }
+    
+    function disconnect() {
+      if (socket) {
+        socket.disconnect();
+        socket = null;
+        currentRoomId = null;
+        currentUser = null;
+        token = null;
+      }
+    }
+    
+    function joinRoom() {
+      if (!socket) {
+        alert('Please connect first');
+        return;
+      }
+      
+      const roomId = document.getElementById('roomId').value;
+      
+      if (!roomId) {
+        alert('Please enter a room ID');
+        return;
+      }
+      
+      console.log('Joining room:', roomId);
+      // Gửi kèm token để server có thể extract thông tin user
+      socket.emit('joinRoom', { 
+        roomId: roomId,
+        token: token
+      });
+    }
+    
+    function sendMessage() {
+      if (!socket) {
+        alert('Please connect first');
+        return;
+      }
+      
+      if (!currentRoomId) {
+        alert('Please join a room first');
+        return;
+      }
+      
+      const message = document.getElementById('messageInput').value;
+      
+      if (!message) {
+        alert('Please enter a message');
+        return;
+      }
+      
+      console.log('Sending message to room:', currentRoomId, message);
+      socket.emit('sendMessage', { 
+        roomId: currentRoomId, 
+        message: message,
+        token: token
+      });
+      
+      document.getElementById('messageInput').value = '';
+    }
+  </script>
+</body>
+</html> 

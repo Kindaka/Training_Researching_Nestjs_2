@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './ResetPassword.css';
+import './reset_password.css';
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();

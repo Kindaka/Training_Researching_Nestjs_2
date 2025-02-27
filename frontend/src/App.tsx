@@ -1,6 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ResetPassword from './pages/reset-password/ResetPassword';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ResetPassword from './pages/reset-password/reset_password';
 import logo from './logo.svg';
 import './App.css';
 
