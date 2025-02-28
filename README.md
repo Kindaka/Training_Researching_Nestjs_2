@@ -97,6 +97,8 @@ Training_Researching_Nestjs/
 ✅ **PostgreSQL** - Relational database  
 ✅ **Docker** - Containerization platform  
 ✅ **JWT (JSON Web Token)** - Authentication mechanism  
+✅ **WebSocket** - Chat Application  
+✅ **Cloudinary** - Upload image, video  
 
 ---
 
