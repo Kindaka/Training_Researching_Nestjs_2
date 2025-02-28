@@ -36,22 +36,33 @@ export class MailService {
   }
 
   async sendResetPasswordEmail(user: User, token: string) {
+    console.log('Mail configuration:', {
+      frontendDomain: this.frontendDomain,
+      mailUser: this.configService.get('MAIL_USER'),
+      mailFrom: this.configService.get('MAIL_FROM'),
+    });
+
+    if (!this.frontendDomain) {
+      console.error('FE_DOMAIN environment variable is not set');
+      throw new Error('Frontend domain configuration is missing');
+    }
+
     const resetUrl = `${this.frontendDomain}/reset-password?token=${token}`;
 
     try {
       await this.mailerService.sendMail({
         to: user.email,
         subject: 'Reset Your Password',
-        template: './reset-password', // reset-password.hbs
+        template: './reset-password',
         context: {
           title: 'Password Reset Request',
           fullName: user.fullName,
           resetUrl,
         },
       });
-      this.logger.log(`Reset password email sent to ${user.email}`);
+      console.log(`Reset password email sent to ${user.email}`);
     } catch (error) {
-      this.logger.error(`Failed to send reset password email to ${user.email}`, error.stack);
+      console.error(`Failed to send reset password email to ${user.email}`, error);
       throw error;
     }
   }
