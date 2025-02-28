@@ -25,7 +25,30 @@ PORT=your_port
 JWT_SECRET=randome_jwt_secret
 ```
 
-#### 📂 ASM/.env
+#### 📂 backend/.env.prod
+```
+DB_HOST=your_key
+DB_PORT=your_key
+DB_NAME=your_key
+DB_USER=your_key
+DB_PASSWORD=your_key
+NODE_ENV=your_key
+PORT=your_key
+JWT_SECRET=your_key
+MAIL_HOST=your_key
+MAIL_PORT=your_key
+MAIL_USER=your_key
+MAIL_PASS=your_key
+MAIL_FROM=your_key
+FE_DOMAIN=https://fe-training-qkit.vercel.app
+SEQ_URL=your_key
+SEQ_API_KEY=your_key
+CLOUDINARY_CLOUD_NAME=your_key
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_key
+```
+
+#### 📂 compose/.env
 ```
 POSTGRESQL_PORT=your_port
 POSTGRESQL_USERNAME=your_username
@@ -51,9 +74,8 @@ npm run start:dev
 ```
 Training_Researching_Nestjs/
 ├── backend/                  # NestJS Backend Application
-├── frontend/                  # NestJS Frontend Application
-├── docker-compose.yml         # Docker Compose Configuration
-├── .env.example               # Example Environment Variables
+├── frontend/                 # NestJS Frontend Application
+├── compose/                  # Docker Compose Configuration
 └── README.md                  # Project Documentation
 ```
 
