@@ -19,13 +19,23 @@ DB_PORT=your_port
 DB_NAME=your_db_name
 DB_USER=your_username
 DB_PASSWORD=your_password
-
 NODE_ENV=development
 PORT=your_port
 JWT_SECRET=randome_jwt_secret
+MAIL_HOST=your_key
+MAIL_PORT=your_key
+MAIL_USER=your_key
+MAIL_PASS=your_key
+MAIL_FROM=your_key
+FE_DOMAIN=https://fe-training-qkit.vercel.app
+SEQ_URL=your_key
+SEQ_API_KEY=your_key
+CLOUDINARY_CLOUD_NAME=your_key
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_key
 ```
 
-#### 📂 backend/.env.prod
+#### 📂 backend/.env.prod (Running on Docker environment)
 ```
 DB_HOST=your_key
 DB_PORT=your_key
