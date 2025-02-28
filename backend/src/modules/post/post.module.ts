@@ -8,6 +8,7 @@ import { PostRepository } from './repositories/post.repository';
 import { UserModule } from '../user/user.module';
 import { Category } from '../category/entities/category.entity';
 import { Tag } from '../tag/entities/tag.entity';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 // Command Handlers
 import { CreatePostHandler } from './commands/handlers/create-post.handler';
@@ -34,6 +35,7 @@ const QueryHandlers = [
     TypeOrmModule.forFeature([Post, Category, Tag]),
     CqrsModule,
     UserModule,
+    CloudinaryModule,
   ],
   controllers: [PostController],
   providers: [

@@ -8,6 +8,9 @@ import { CustomLoggerService } from './core/logger/custom-logger.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { Controller, Get, Res } from '@nestjs/common';
+import { MulterExceptionFilter } from './core/filters/multer-exception.filter';
+import * as express from 'express';
+import * as fs from 'fs';
 
 @Controller()
 export class AppController {
@@ -18,9 +21,18 @@ export class AppController {
 }
 
 async function bootstrap() {
+  // Đảm bảo thư mục uploads tồn tại
+  const uploadsDir = join(__dirname, '..', 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors();
+
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
@@ -43,13 +55,20 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('API Documentation')
-    .setDescription('API documentation for the application')
+    .setDescription('API description')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+
+  // Apply global filters
+  app.useGlobalFilters(new MulterExceptionFilter());
 
   await app.listen(port);
   console.log(`🚀 Server is running on http://localhost:${port}`);

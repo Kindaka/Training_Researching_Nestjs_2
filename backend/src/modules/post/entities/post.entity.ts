@@ -27,6 +27,12 @@ export class Post {
     @Column({ nullable: true })
     publishedAt: Date
 
+    @Column({ nullable: true })
+    image: string
+
+    @Column({ nullable: true })
+    video: string
+
     @ManyToOne(() => User, user => user.posts)
     author: User
 
