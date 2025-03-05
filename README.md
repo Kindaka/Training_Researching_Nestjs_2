@@ -99,7 +99,7 @@ Training_Researching_Nestjs/
 ✅ **JWT (JSON Web Token)** - Authentication mechanism  
 ✅ **WebSocket** - Chat Application  
 ✅ **Cloudinary** - Upload image, video  
-
+✅ **Seq** - Centralized structured logs
 ---
 
 ## 🤝 Contribution
