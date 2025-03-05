@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 class SeqTransport extends Transport {
   private seqUrl: string;
   private apiKey: string;
+  private hasLoggedError = false;
 
   constructor(opts: any) {
     super(opts);
@@ -21,6 +22,13 @@ class SeqTransport extends Transport {
     });
 
     const { level, message, ...meta } = info;
+    
+    // Kiểm tra nếu không có URL hoặc API key
+    if (!this.seqUrl || !this.apiKey) {
+      console.warn('Seq logging disabled: Missing URL or API key');
+      callback();
+      return;
+    }
     
     try {
       await fetch(`${this.seqUrl}/api/events/raw`, {
@@ -39,7 +47,11 @@ class SeqTransport extends Transport {
         })
       });
     } catch (error) {
-      console.error('Error sending log to Seq:', error);
+      // Chỉ log lỗi một lần để tránh spam console
+      if (!this.hasLoggedError) {
+        console.error('Error sending log to Seq. Further Seq errors will be suppressed:', error);
+        this.hasLoggedError = true;
+      }
     }
 
     callback();

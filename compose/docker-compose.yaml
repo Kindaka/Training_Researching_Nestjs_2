@@ -17,8 +17,11 @@ services:
     restart: always
     env_file:
       - ../backend/.env.prod
+    environment:
+      - SEQ_URL=http://seq:5341 
     depends_on:
       - postgres_db
+      - seq
     networks:
       - docker-network
     logging: *default-logging
@@ -40,8 +43,23 @@ services:
       - docker-network
     logging: *default-logging
 
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    ports:
+      - "5341:5341"  # API port
+      - "8081:80"    # Web UI port
+    environment:
+      - ACCEPT_EULA=Y
+    volumes:
+      - seq-data:/data
+    networks:
+      - docker-network
+    logging: *default-logging
+    
 volumes:
   db-data:
+  seq-data:  
 
 networks:
   docker-network:
