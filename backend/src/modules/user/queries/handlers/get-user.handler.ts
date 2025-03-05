@@ -8,14 +8,15 @@ import { User } from '../../entities/user.entity';
 @QueryHandler(GetUserQuery)
 export class GetUserHandler implements IQueryHandler<GetUserQuery> {
   constructor(
-    @InjectRepository(User)
+    @InjectRepository(User) // module User sử dụng Repository của TypeORM trực tiếp vào handler 
+    // thông qua @InjectRepository thay vì phải tạo repository riêng chỉ giành cho việc xử lý logic đơn giản
     private userRepository: Repository<User>,
   ) {}
 
   async execute(query: GetUserQuery) {
     const user = await this.userRepository.findOne({
       where: { id: query.id },
-      select: ['id', 'email', 'fullName', 'role', 'createdAt', 'updatedAt'],
+      select: ['id', 'email', 'fullName', 'createdAt', 'updatedAt'],
     });
 
     if (!user) {

@@ -2,6 +2,8 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 import { GetPostByIdQuery } from '../impl/get-post-by-id.query';
 import { PostRepository } from '../../repositories/post.repository';
+import { plainToInstance } from 'class-transformer';
+import { PostResponseDto } from '../../dto/post-response.dto';
 
 @QueryHandler(GetPostByIdQuery)
 export class GetPostByIdHandler implements IQueryHandler<GetPostByIdQuery> {
@@ -15,6 +17,9 @@ export class GetPostByIdHandler implements IQueryHandler<GetPostByIdQuery> {
       throw new NotFoundException(`Post with ID ${id} not found`);
     }
 
-    return post;
+    // Transform the post entity to the DTO
+    return plainToInstance(PostResponseDto, post, {
+      excludeExtraneousValues: false
+    });
   }
 } 

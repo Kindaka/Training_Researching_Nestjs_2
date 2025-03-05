@@ -14,6 +14,9 @@ import { GetCategoryByIdQuery } from '../queries/impl/get-category-by-id.query';
 import { Roles } from '../../../core/decorators/roles.decorator';
 import { Role } from '../../../core/enums/role.enum';
 import { Public } from '../../../core/decorators/public.decorator';
+import { CategoryResponseDto } from '../dto/category-response.dto';
+import { ApiResponse } from '@nestjs/swagger';
+
 @ApiTags('Categories')
 @ApiBearerAuth()
 @Controller('api/v1/categories')
@@ -26,6 +29,7 @@ export class CategoryController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'Get all categories' })
+  @ApiResponse({ status: 200, description: 'Get all categories successfully', type: CategoryResponseDto, isArray: true })
   async findAll() {
     return this.queryBus.execute(new GetCategoriesQuery());
   }
@@ -33,6 +37,7 @@ export class CategoryController {
   @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get category by id' })
+  @ApiResponse({ status: 200, description: 'Get category by id successfully', type: CategoryResponseDto })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.queryBus.execute(new GetCategoryByIdQuery(id));
   }

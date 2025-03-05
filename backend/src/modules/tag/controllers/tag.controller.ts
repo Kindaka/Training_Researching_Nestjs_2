@@ -9,13 +9,14 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { TagService } from '../services/tag.service';
 import { CreateTagDto } from '../dto/create-tag.dto';
 import { UpdateTagDto } from '../dto/update-tag.dto';
 import { Role } from '../../../core/enums/role.enum';
 import { Roles } from '../../../core/decorators/roles.decorator';
 import { Public } from '../../../core/decorators/public.decorator';
+import { TagDtoResponse } from '../dto/tag-response.dto';
 @ApiTags('Tags')
 @Controller('api/v1/tags')
 export class TagController {
@@ -33,6 +34,7 @@ export class TagController {
   @Get()
   @Public()
   @ApiOperation({ summary: 'Get all tags' })
+  @ApiResponse({ status: 200, description: 'Get all tags successfully', type: TagDtoResponse, isArray: true })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   findAll(
@@ -45,6 +47,7 @@ export class TagController {
   @Get(':id')
   @Public()
   @ApiOperation({ summary: 'Get tag by id' })
+  @ApiResponse({ status: 200, description: 'Get tag by id successfully', type: TagDtoResponse })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.tagService.findOne(id);
   }

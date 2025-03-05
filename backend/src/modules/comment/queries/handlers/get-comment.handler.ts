@@ -2,6 +2,8 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 import { GetCommentQuery } from '../impl/get-comment.query';
 import { CommentRepository } from '../../repositories/comment.repository';
+import { plainToInstance } from 'class-transformer';
+import { CommentResponseDto } from '../../dto/comment-response.dto';  
 
 @QueryHandler(GetCommentQuery)
 export class GetCommentHandler implements IQueryHandler<GetCommentQuery> {
@@ -12,6 +14,8 @@ export class GetCommentHandler implements IQueryHandler<GetCommentQuery> {
     if (!comment) {
       throw new NotFoundException(`Comment #${query.id} not found`);
     }
-    return comment;
+    return plainToInstance(CommentResponseDto, comment, {
+      excludeExtraneousValues: false
+    });
   }
 } 

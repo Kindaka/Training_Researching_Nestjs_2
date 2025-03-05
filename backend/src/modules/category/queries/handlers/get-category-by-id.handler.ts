@@ -2,6 +2,8 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 import { GetCategoryByIdQuery } from '../impl/get-category-by-id.query';
 import { CategoryRepository } from '../../repositories/category.repository';
+import { plainToInstance } from 'class-transformer';
+import { CategoryResponseDto } from '../../dto/category-response.dto';
 
 @QueryHandler(GetCategoryByIdQuery)
 export class GetCategoryByIdHandler implements IQueryHandler<GetCategoryByIdQuery> {
@@ -15,6 +17,8 @@ export class GetCategoryByIdHandler implements IQueryHandler<GetCategoryByIdQuer
       throw new NotFoundException(`Category with ID ${id} not found`);
     }
 
-    return category;
+    return plainToInstance(CategoryResponseDto, category, {
+      excludeExtraneousValues: false
+    });
   }
 } 

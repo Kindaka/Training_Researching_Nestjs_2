@@ -21,6 +21,9 @@ import { UpdatePostDto } from '../dto/update-post.dto';
 import { Role } from '../../../core/enums/role.enum';
 import { Roles } from '../../../core/decorators/roles.decorator';
 import { Public } from '../../../core/decorators/public.decorator';
+import { PostResponseDto } from '../dto/post-response.dto';
+import { ApiResponse } from '@nestjs/swagger';
+
 @ApiTags('Posts')
 @Controller('api/v1/posts')
 export class PostController {
@@ -39,6 +42,7 @@ export class PostController {
   @ApiOperation({ summary: 'Get all posts' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({ status: 201, description: 'Get all posts successfully', type: PostResponseDto, isArray: true })
   findAll(
     @Query('page', new ParseIntPipe({ optional: true })) page?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -49,6 +53,7 @@ export class PostController {
   @Get('get-post-by-id/:id')
   @Public()
   @ApiOperation({ summary: 'Get post by id' })
+  @ApiResponse({ status: 201, description: 'Get post by id successfully', type: PostResponseDto })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.postService.findOne(id);
   }
