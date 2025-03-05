@@ -76,7 +76,6 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
           `Failed to send welcome email to ${savedUser.email}`,
           emailError.stack
         );
-        // Don't throw error here to allow registration to complete
       }
 
       // Generate token

@@ -8,6 +8,8 @@ import { LoginHandler } from './login.handler';
 import { LoginCommand } from '../impl/login.command';
 import { User } from '../../../user/entities/user.entity';
 import { Role } from '../../../../core/enums/role.enum';
+import { CustomLoggerService } from '../../../../core/logger/custom-logger.service';
+import { UserService } from '../../../user/services/user.service';
 
 jest.mock('bcrypt');
 
@@ -33,15 +35,30 @@ describe('LoginHandler', () => {
       providers: [
         LoginHandler,
         {
-          provide: getRepositoryToken(User),
+          provide: UserService,
           useValue: {
-            findOne: jest.fn(),
+            findByEmail: jest.fn(),
           },
         },
         {
           provide: JwtService,
           useValue: {
             signAsync: jest.fn(),
+          },
+        },
+        {
+          provide: CustomLoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: {
+            findOne: jest.fn(),
           },
         },
       ],

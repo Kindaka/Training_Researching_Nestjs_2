@@ -15,10 +15,10 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { CommentService } from '../services/comment.service';
 import { CreateCommentDto } from '../dto/create-comment.dto';
 import { UpdateCommentDto } from '../dto/update-comment.dto';
-import { Public } from 'src/core/decorators/public.decorator';
-import { Role } from 'src/core/enums/role.enum';
-import { Roles } from 'src/core/decorators/roles.decorator';
-import { AuthGuard } from 'src/core/guards/auth.guard';
+import { Public } from '../../../core/decorators/public.decorator';
+import { Role } from '../../../core/enums/role.enum';
+import { Roles } from '../../../core/decorators/roles.decorator';
+import { AuthGuard } from '../../../core/guards/auth.guard';
 @ApiTags('Comments')
 @Controller('api/v1/comments')
 export class CommentController {

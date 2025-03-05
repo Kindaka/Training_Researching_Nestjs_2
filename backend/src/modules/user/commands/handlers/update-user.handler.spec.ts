@@ -134,7 +134,12 @@ describe('UpdateUserHandler', () => {
 
       await expect(
         handler.execute(new UpdateUserCommand(anotherUser.id, updateDto, mockUser)),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(ForbiddenException);
+
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { id: anotherUser.id },
+      });
+      expect(userRepository.save).not.toHaveBeenCalled();
     });
   });
 }); 

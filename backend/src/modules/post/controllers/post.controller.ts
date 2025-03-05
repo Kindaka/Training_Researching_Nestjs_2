@@ -18,9 +18,9 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { PostService } from '../services/post.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
-import { Role } from 'src/core/enums/role.enum';
-import { Roles } from 'src/core/decorators/roles.decorator';
-import { Public } from 'src/core/decorators/public.decorator';
+import { Role } from '../../../core/enums/role.enum';
+import { Roles } from '../../../core/decorators/roles.decorator';
+import { Public } from '../../../core/decorators/public.decorator';
 @ApiTags('Posts')
 @Controller('api/v1/posts')
 export class PostController {

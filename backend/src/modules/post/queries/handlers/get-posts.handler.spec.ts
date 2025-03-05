@@ -22,6 +22,8 @@ describe('GetPostsHandler', () => {
     comments: [],
     createdAt: new Date(),
     updatedAt: new Date(),
+    image: null,
+    video: null,
   };
 
   beforeEach(async () => {

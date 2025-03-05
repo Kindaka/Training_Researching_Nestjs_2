@@ -54,8 +54,8 @@ async function bootstrap() {
   const port = configService.get<number>('PORT') || 3000;
 
   const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('API description')
+    .setTitle('API Blog')
+    .setDescription('Blog Management API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

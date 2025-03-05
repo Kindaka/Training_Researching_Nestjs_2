@@ -3,10 +3,14 @@ import { CommandBus } from '@nestjs/cqrs';
 import { AuthService } from './auth.service';
 import { RegisterCommand } from '../commands/impl/register.command';
 import { LoginCommand } from '../commands/impl/login.command';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 describe('AuthService', () => {
   let service: AuthService;
   let commandBus: CommandBus;
+  let jwtService: JwtService;
+  let configService: ConfigService;
 
   const mockUser = {
     id: 1,
@@ -24,11 +28,25 @@ describe('AuthService', () => {
             execute: jest.fn(),
           },
         },
+        {
+          provide: JwtService,
+          useValue: {
+            signAsync: jest.fn().mockResolvedValue('mock-token'),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('some-secret'),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     commandBus = module.get<CommandBus>(CommandBus);
+    jwtService = module.get<JwtService>(JwtService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {

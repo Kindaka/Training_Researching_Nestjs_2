@@ -23,6 +23,8 @@ describe('CreatePostHandler', () => {
     comments: [],
     createdAt: new Date(),
     updatedAt: new Date(),
+    image: 'test-image-url',
+    video: 'test-video-url',
   };
 
   beforeEach(async () => {

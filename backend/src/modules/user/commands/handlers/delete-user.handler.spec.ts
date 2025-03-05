@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { DeleteUserHandler } from './delete-user.handler';
 import { DeleteUserCommand } from '../impl/delete-user.command';
 import { User } from '../../entities/user.entity';
@@ -70,7 +70,7 @@ describe('DeleteUserHandler', () => {
         where: { id: mockUser.id },
       });
       expect(userRepository.remove).toHaveBeenCalledWith(mockUser);
-      expect(result).toEqual({ message: 'Delete user successfully' });
+      expect(result).toEqual({ message: 'User deleted successfully' });
     });
 
     it('should delete user successfully when admin deletes any user', async () => {
@@ -85,7 +85,7 @@ describe('DeleteUserHandler', () => {
         where: { id: mockUser.id },
       });
       expect(userRepository.remove).toHaveBeenCalledWith(mockUser);
-      expect(result).toEqual({ message: 'Delete user successfully' });
+      expect(result).toEqual({ message: 'User deleted successfully' });
     });
 
     it('should throw NotFoundException when user not found', async () => {
@@ -96,13 +96,13 @@ describe('DeleteUserHandler', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException when non-admin user tries to delete another user', async () => {
+    it('should throw ForbiddenException when non-admin user tries to delete another user', async () => {
       const anotherUser = { ...mockUser, id: 3 };
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(anotherUser);
 
       await expect(
         handler.execute(new DeleteUserCommand(anotherUser.id, mockUser)),
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(ForbiddenException);
 
       expect(userRepository.findOne).toHaveBeenCalledWith({
         where: { id: anotherUser.id },

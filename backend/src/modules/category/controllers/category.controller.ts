@@ -11,9 +11,9 @@ import { UpdateCategoryCommand } from '../commands/impl/update-category.command'
 import { DeleteCategoryCommand } from '../commands/impl/delete-category.command';
 import { GetCategoriesQuery } from '../queries/impl/get-categories.query';
 import { GetCategoryByIdQuery } from '../queries/impl/get-category-by-id.query';
-import { Roles } from 'src/core/decorators/roles.decorator';
-import { Role } from 'src/core/enums/role.enum';
-import { Public } from 'src/core/decorators/public.decorator';
+import { Roles } from '../../../core/decorators/roles.decorator';
+import { Role } from '../../../core/enums/role.enum';
+import { Public } from '../../../core/decorators/public.decorator';
 @ApiTags('Categories')
 @ApiBearerAuth()
 @Controller('api/v1/categories')

@@ -8,6 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../../user/services/user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../../user/entities/user.entity';
+import { ConfigService } from '@nestjs/config';
+import { CustomLoggerService } from '../../../core/logger/custom-logger.service';
 
 describe('CommentController', () => {
   let controller: CommentController;
@@ -69,6 +71,20 @@ describe('CommentController', () => {
           provide: getRepositoryToken(User),
           useValue: {
             findOne: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('some-value'), // Mock giá trị trả về nếu cần
+          },
+        },
+        {
+          provide: CustomLoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
           },
         },
       ],

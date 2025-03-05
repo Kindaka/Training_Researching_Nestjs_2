@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TagController } from './tag.controller';
 import { TagService } from '../services/tag.service';
 import { AuthGuard } from '../../../core/guards/auth.guard';
-import { RolesGuard } from '../../../core/guards/role.guard';
+import { RolesGuard } from '../../../core/guards/roles.guard';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../../user/services/user.service';
 import { ConfigService } from '@nestjs/config';

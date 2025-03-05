@@ -8,6 +8,8 @@ import { RegisterHandler } from './register.handler';
 import { RegisterCommand } from '../impl/register.command';
 import { User } from '../../../user/entities/user.entity';
 import { Role } from '../../../../core/enums/role.enum';
+import { CustomLoggerService } from '../../../../core/logger/custom-logger.service';
+import { MailService } from '../../../mail/services/mail.service';
 
 jest.mock('bcrypt');
 
@@ -15,6 +17,7 @@ describe('RegisterHandler', () => {
   let handler: RegisterHandler;
   let userRepository: Repository<User>;
   let jwtService: JwtService;
+  let mailService: MailService;
 
   const mockUser: User = {
     id: 1,
@@ -46,12 +49,26 @@ describe('RegisterHandler', () => {
             signAsync: jest.fn().mockResolvedValue('mock-token'),
           },
         },
+        {
+          provide: CustomLoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+          },
+        },
+        {
+          provide: MailService,
+          useValue: {
+            sendWelcomeEmail: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     handler = module.get<RegisterHandler>(RegisterHandler);
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
     jwtService = module.get<JwtService>(JwtService);
+    mailService = module.get<MailService>(MailService);
   });
 
   it('should be defined', () => {
@@ -89,6 +106,8 @@ describe('RegisterHandler', () => {
         password: hashedPassword,
       });
 
+      jest.spyOn(mailService, 'sendWelcomeEmail').mockResolvedValue(undefined);
+
       const result = await handler.execute(new RegisterCommand(registerDto));
 
       expect(userRepository.findOne).toHaveBeenCalledWith({
@@ -96,11 +115,16 @@ describe('RegisterHandler', () => {
       });
       expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
       expect(userRepository.create).toHaveBeenCalledWith({
-        ...registerDto,
+        email: registerDto.email,
+        fullName: registerDto.fullName,
         password: hashedPassword,
         role: Role.USER,
       });
       expect(userRepository.save).toHaveBeenCalled();
+      expect(mailService.sendWelcomeEmail).toHaveBeenCalledWith({
+        ...mockUser,
+        password: hashedPassword,
+      });
       expect(result).toEqual(expectedResponse);
     });
 
@@ -130,12 +154,9 @@ describe('RegisterHandler', () => {
 
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
       
-      try {
-        await handler.execute(new RegisterCommand(registerDto));
-        fail('Should have thrown InternalServerErrorException');
-      } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-      }
+      await expect(
+        handler.execute(new RegisterCommand(registerDto)),
+      ).rejects.toThrow(InternalServerErrorException);
     });
 
     it('should throw InternalServerErrorException if email is invalid', async () => {
@@ -147,12 +168,9 @@ describe('RegisterHandler', () => {
 
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
       
-      try {
-        await handler.execute(new RegisterCommand(registerDto));
-        fail('Should have thrown InternalServerErrorException');
-      } catch (error) {
-        expect(error).toBeInstanceOf(InternalServerErrorException);
-      }
+      await expect(
+        handler.execute(new RegisterCommand(registerDto)),
+      ).rejects.toThrow(InternalServerErrorException);
     });
   });
 }); 
