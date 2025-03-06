@@ -14,17 +14,13 @@ export class CommentRepository {
   ) {}
 
   async findAll(postId: number, page: number = 1, limit: number = 10): Promise<[Comment[], number]> {
+    // Lấy root comments
     const [rootComments, total] = await this.repository.findAndCount({
       where: { 
         post: { id: postId },
         parent: IsNull()
       },
-      relations: [
-        'user',
-        'post',
-        'replies',
-        'replies.user'
-      ],
+      relations: ['user', 'post'],
       select: {
         user: {
           id: true,
@@ -32,32 +28,44 @@ export class CommentRepository {
           fullName: true,
           createdAt: true,
           updatedAt: true,
-        },
-        replies: {
-          id: true,
-          content: true,
-          createdAt: true,
-          updatedAt: true,
-          user: {
-            id: true,
-            email: true,
-            fullName: true,
-            createdAt: true,
-            updatedAt: true,
-          }
-        }
-      },  
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { 
-        createdAt: 'DESC',
-        replies: {
-          createdAt: 'ASC'
         }
       },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { createdAt: 'DESC' }
     });
 
+    // Lấy tất cả replies cho mỗi root comment
+    for (const comment of rootComments) {
+      comment.replies = await this.findRepliesRecursively(comment.id);
+    }
+
     return [rootComments, total];
+  }
+
+  // Hàm đệ quy để lấy tất cả replies và replies của replies
+  async findRepliesRecursively(parentId: number): Promise<Comment[]> {
+    const replies = await this.repository.find({
+      where: { parent: { id: parentId } },
+      relations: ['user'],
+      select: {
+        user: {
+          id: true,
+          email: true,
+          fullName: true,
+          createdAt: true,
+          updatedAt: true,
+        }
+      },
+      order: { createdAt: 'ASC' }
+    });
+
+    // Đệ quy lấy replies cho mỗi reply
+    for (const reply of replies) {
+      reply.replies = await this.findRepliesRecursively(reply.id);
+    }
+
+    return replies;
   }
 
   async findById(id: number): Promise<Comment> {
@@ -66,9 +74,7 @@ export class CommentRepository {
       relations: [
         'user',
         'post',
-        'parent',
-        'replies',
-        'replies.user'
+        'parent'
       ],
       select: {
         user: {
@@ -77,19 +83,6 @@ export class CommentRepository {
           fullName: true,
           createdAt: true,
           updatedAt: true,
-        },
-        replies: {
-          id: true,
-          content: true,
-          createdAt: true,
-          updatedAt: true,
-          user: {
-            id: true,
-            email: true,
-            fullName: true,
-            createdAt: true,
-            updatedAt: true,
-          }
         }
       },
     });
@@ -97,6 +90,9 @@ export class CommentRepository {
     if (!comment) {
       throw new NotFoundException(`Comment #${id} not found`);
     }
+
+    // Lấy tất cả replies đệ quy
+    comment.replies = await this.findRepliesRecursively(comment.id);
 
     return comment;
   }
