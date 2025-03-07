@@ -1,0 +1,150 @@
+constructor(
+  private jwtService: JwtService,
+  private reflector: Reflector,
+  private configService: ConfigService,
+  private logger: CustomLoggerService,
+  private userService: UserService
+) {}
+
+jwtService: Được sử dụng để xác thực token JWT.
+reflector: Được sử dụng để kiểm tra metadata của route (ví dụ: xem route có được đánh dấu là public hay không).
+configService: Để lấy các biến môi trường, như JWT_SECRET.
+logger: Để ghi log các thông tin liên quan đến xác thực.
+userService: Để tìm kiếm thông tin người dùng từ cơ sở dữ liệu.
+
+-----------------------------------------
+
+Kiểm tra xem route có phải là public không
+
+const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+  context.getHandler(),
+  context.getClass(),
+]);
+
+if (isPublic) {
+  return true;
+}
+
+IS_PUBLIC_KEY: Là một constant được sử dụng để đánh dấu các route là public.
+Nếu route được đánh dấu là public, canActivate sẽ trả về true, cho phép request tiếp tục mà không cần xác thực.
+
+-----------------------------------------
+
+Lấy request và token
+
+    const request = context.switchToHttp().getRequest();
+    this.logger.debug('Checking AuthGuard...');
+    
+    const token = this.extractTokenFromHeader(request);
+    this.logger.debug(`Auth Header: ${token}`);
+
+request: Lấy đối tượng request từ context.
+extractTokenFromHeader: Gọi hàm này để lấy token từ header Authorization.
+
+-----------------------------------------
+
+Kiểm tra token 
+
+    if (!token) {
+  this.logger.warn('Missing authentication token');
+  throw new ForbiddenException('Missing or invalid token');
+}
+
+Nếu không có token, ghi log cảnh báo và ném ra ForbiddenException.
+
+-----------------------------------------
+
+Lấy secret từ ConfigService
+const secret = this.configService.get<string>('JWT_SECRET'); 
+
+ConfigService: Được sử dụng để lấy các biến môi trường từ file cấu hình (ví dụ: .env).
+JWT_SECRET: Đây là khóa bí mật được sử dụng để mã hóa và giải mã token JWT. Nó cần phải được giữ bí mật và không được công khai.
+
+-----------------------------------------
+
+const payload = await this.jwtService.verifyAsync(token, {
+  secret: secret
+});
+
+jwtService.verifyAsync: Phương thức này từ JwtService sẽ kiểm tra tính hợp lệ của token.
+token: Là token JWT mà người dùng gửi trong header Authorization.
+secret: Là khóa bí mật được sử dụng để xác thực token.
+
+Token hợp lệ: Nếu token hợp lệ, phương thức verifyAsync 
+sẽ trả về payload của token, thường chứa thông tin như userId, email, 
+và các thông tin khác mà bạn đã mã hóa vào token khi tạo nó.
+
+Token không hợp lệ hoặc hết hạn: Nếu token không hợp lệ 
+(ví dụ: đã bị thay đổi, không đúng định dạng, hoặc đã hết hạn), 
+phương thức này sẽ ném ra một lỗi. Lỗi này sẽ được bắt trong khối catch bên dưới.
+
+-----------------------------------------
+
+const user = await this.userService.findByEmail(payload.email);
+console.log('👤 Found user:', user);
+
+findByEmail: Sau khi xác thực token và lấy được payload, bạn sử dụng email từ payload để tìm kiếm người dùng trong cơ sở dữ liệu.
+user: Nếu tìm thấy người dùng, biến này sẽ chứa thông tin người dùng. Nếu không tìm thấy, bạn sẽ ném ra một lỗi.
+
+-----------------------------------------
+
+if (!user) {
+  throw new ForbiddenException('User not found');
+}
+
+Nếu không tìm thấy người dùng tương ứng với email trong payload, 
+ném ra ForbiddenException với thông báo "User not found". 
+Điều này đảm bảo rằng chỉ những người dùng hợp lệ mới có thể truy cập vào các endpoint được bảo vệ.
+
+-----------------------------------------
+
+Bước này currentUser được sinh ra và có thể sử dụng ở các handlers khác nhau
+
+request.user = payload;
+request.currentUser = user;
+
+request.user: Gán payload vào request để có thể sử dụng trong các 
+handler tiếp theo. Payload thường chứa thông tin như userId, email, v.v.
+request.currentUser: Gán đối tượng người dùng tìm thấy vào request. 
+Điều này cho phép các handler sau đó có thể truy cập thông tin người dùng một cách dễ dàng.
+
+-----------------------------------------
+
+console.log('✅ Auth successful - User:', {
+  id: user.id,
+  email: user.email,
+  role: user.role
+});
+
+Ghi log xác thực thông tin thành công
+
+-----------------------------------------
+
+return true; nếu các bước trên thành công
+
+-----------------------------------------
+catch (error) {
+  this.logger.error('Invalid authentication token', error.stack);
+  throw new ForbiddenException('Invalid or expired token');
+}
+
+
+Nếu có bất kỳ lỗi nào xảy ra trong quá trình xác thực 
+(ví dụ: token không hợp lệ, không tìm thấy người dùng), lỗi sẽ được ghi log 
+và ném ra ForbiddenException với thông báo "Invalid or expired token".
+
+
+-----------------------------------------
+
+Khi một request đến một endpoint trong ứng dụng:
+- AuthGuard sẽ được kích hoạt đầu tiên. Nó sẽ kiểm tra xem request có chứa 
+token hợp lệ không. Nếu không có token hoặc token không hợp lệ, nó sẽ từ 
+chối request và trả về lỗi 403 (Forbidden).
+- Nếu token hợp lệ, AuthGuard sẽ tìm kiếm thông tin người dùng từ cơ sở dữ 
+liệu và gán thông tin này vào request.currentUser.
+- Sau khi AuthGuard xác thực thành công, RolesGuard sẽ được kích hoạt. Nó 
+sẽ kiểm tra xem vai trò của người dùng có phù hợp với các vai trò yêu cầu 
+của endpoint hay không.
+- Nếu người dùng có quyền truy cập, request sẽ được phép tiếp tục đến 
+handler tương ứng. Nếu không, RolesGuard sẽ từ chối request và trả về 
+lỗi 403 (Forbidden).
