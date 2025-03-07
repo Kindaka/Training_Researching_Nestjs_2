@@ -1,0 +1,86 @@
+Khởi tạo RolesGuard
+constructor(private reflector: Reflector) {}
+
+reflector: Được sử dụng để truy cập metadata của route (ví dụ: xem route có yêu cầu vai trò nào không).
+
+-----------------------------------------
+
+Phương thức canActivate
+
+Bước 1: Lấy các vai trò yêu cầu
+
+const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+  context.getHandler(),
+  context.getClass(),
+]);
+
+ROLES_KEY: Là một constant được sử dụng để đánh dấu các route yêu cầu vai trò cụ thể.
+getAllAndOverride: Phương thức này sẽ lấy tất cả các vai trò yêu cầu từ metadata của handler và class. Nếu không có vai trò nào được yêu cầu, nó sẽ trả về undefined.
+
+-----------------------------------------
+
+Bước 2: Kiểm tra nếu không có vai trò yêu cầu
+
+if (!requiredRoles) {
+  return true;
+}
+
+Nếu không có vai trò nào được yêu cầu, canActivate sẽ trả về true, 
+cho phép request tiếp tục mà không cần kiểm tra vai trò.
+
+-----------------------------------------
+
+Bước 3: Lấy request và user
+
+const request = context.switchToHttp().getRequest();
+const user = request.currentUser;
+
+request: Lấy đối tượng request từ context.
+user: Lấy thông tin người dùng từ request. Thông tin này đã được gán trong AuthGuard trước đó.
+
+-----------------------------------------
+
+Bước 4: Ghi log thông tin vai trò
+
+console.log('🔒 RolesGuard - Checking roles:', {
+  userRole: user?.role,
+  requiredRoles,
+});
+
+Ghi log thông tin vai trò của người dùng và các vai trò yêu cầu. Điều này hữu ích cho việc theo dõi và gỡ lỗi.
+
+-----------------------------------------
+
+Bước 5: Kiểm tra người dùng và vai trò
+if (!user || !user.role) {
+  console.log('❌ RolesGuard - No user or role found');
+  return false;
+}
+
+Nếu không có người dùng hoặc vai trò, ghi log cảnh báo và trả về false, ngăn không cho request tiếp tục.
+
+-----------------------------------------
+
+Bước 6: Kiểm tra quyền truy cập
+const userRole = user.role.toUpperCase();
+const hasRole = requiredRoles.some(role => role === userRole);
+
+some: Phương thức này sẽ kiểm tra xem vai trò của người dùng có nằm trong danh sách các vai trò cho phép hay không.
+userRole: Chuyển đổi vai trò của người dùng về chữ hoa để đảm bảo việc so sánh không bị ảnh hưởng bởi chữ hoa hay chữ thường.
+Bước 7: Ghi log kết quả 
+
+console.log(`${hasRole ? '✅' : '❌'} RolesGuard - Access:`, hasRole);
+Ghi log kết quả kiểm tra quyền truy cập.
+
+-----------------------------------------
+Bước 8: Trả về kết quả
+return hasRole;
+
+Nếu người dùng có vai trò phù hợp, canActivate sẽ trả về true, cho 
+phép request tiếp tục đến handler tương ứng. Nếu không, nó sẽ trả về 
+false, ngăn request lại.
+
+-----------------------------------------
+-----------------------------------------
+-----------------------------------------
+-----------------------------------------
