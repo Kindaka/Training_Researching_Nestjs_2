@@ -6,8 +6,6 @@ import { AppConfig, DatabaseConfig } from './config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user/user.module';
 import { AuthService } from './modules/user/services/auth.service';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { join } from 'path';
 import { CategoryModule } from './modules/category/category.module';
 import { PostController } from './modules/post/controllers/post.controller';
 import { PostService } from './modules/post/services/post.service';
@@ -34,8 +32,8 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        ...configService.get('database'),
+      useFactory: async (configService: ConfigService) => ({
+        ...(await configService.get('database')),
       }),
       inject: [ConfigService],
     }),
