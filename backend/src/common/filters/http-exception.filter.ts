@@ -25,14 +25,27 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
-      const response = exception.getResponse();
-      message = typeof response === 'string' ? response : (response as any).message || response;
-      error = (response as any).error || exception.name;
+      const res = exception.getResponse();
+    
+      if (typeof res === 'object' && res !== null) {
+        const safeResponse = res as { message?: string | string[], error?: string };
+      
+        if (Array.isArray(safeResponse.message)) {
+          message = safeResponse.message.join(', ');
+        } else {
+          message = safeResponse.message || exception.message;
+        }
+      
+        error = safeResponse.error || exception.name;
+      }
+      
+    
       stack = exception.stack;
     } 
     else if (exception instanceof QueryFailedError) {
       status = HttpStatus.BAD_REQUEST;
-      message = (exception as any).detail || exception.message;
+      const queryError = exception as QueryFailedError & { detail?: string };
+      message = queryError.detail || queryError.message;
       error = 'Database Error';
       stack = exception.stack;
     }
@@ -40,6 +53,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message = exception.message;
       stack = exception.stack;
     }
+    
 
     // Log error with details
     this.logger.error(`${error}: ${message}`, {

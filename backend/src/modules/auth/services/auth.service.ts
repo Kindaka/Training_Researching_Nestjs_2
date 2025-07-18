@@ -17,23 +17,24 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto): Promise<{ message: string; accessToken: string; user: Partial<User> }> {
     return this.commandBus.execute(new RegisterCommand(registerDto));
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<{ message: string; accessToken: string }> {
     return this.commandBus.execute(new LoginCommand(loginDto));
   }
+  
 
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
     return this.commandBus.execute(new ForgotPasswordCommand(forgotPasswordDto));
   }
-
-  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+  
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
     return this.commandBus.execute(new ResetPasswordCommand(resetPasswordDto));
   }
 
-  async generateToken(user: User): Promise<string> {
+  async generateToken(user: User): Promise<string> {  
     const payload = {
       id: user.id,
       email: user.email,

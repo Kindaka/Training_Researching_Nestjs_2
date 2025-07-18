@@ -1,7 +1,13 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from '../enums/role.enum';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+import { Request } from 'express';
+import { CurrentUser } from '../../modules/auth/interfaces/current-user.interface'; // 👈 tạo file này nếu chưa có
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -17,7 +23,9 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest() as Request & {
+      currentUser?: CurrentUser;
+    };
     const user = request.currentUser;
 
     console.log('🔒 RolesGuard - Checking roles:', {
@@ -30,11 +38,11 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    const userRole = user.role.toUpperCase();
-    const hasRole = requiredRoles.some(role => role === userRole);
-    
+    const userRole = user.role.toUpperCase() as Role;
+    const hasRole = requiredRoles.includes(userRole);
+
     console.log(`${hasRole ? '✅' : '❌'} RolesGuard - Access:`, hasRole);
-    
+
     return hasRole;
   }
-} 
+}

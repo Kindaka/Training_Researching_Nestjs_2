@@ -20,7 +20,7 @@ export class ResetPasswordHandler implements ICommandHandler<ResetPasswordComman
       const { token, password } = command.resetPasswordDto;
 
       // Verify token
-      const payload = await this.jwtService.verifyAsync(token);
+      const payload = await this.jwtService.verifyAsync(token) as { id: number };
       const user = await this.userRepository.findOne({ where: { id: payload.id } });
 
       if (!user) {

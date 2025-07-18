@@ -42,10 +42,10 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
       } catch (emailError) {
         this.logger.error(
           `Failed to send reset password email to ${user.email}`,
-          emailError.stack
+          (emailError as Error).stack
         );
-        throw new InternalServerErrorException('Failed to send reset password email');
       }
+      
 
       return {
         message: 'Reset password instructions have been sent to your email',
@@ -54,7 +54,7 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error('Error during forgot password process', error.stack);
+      this.logger.error('Error during forgot password process', (error as Error).stack);
       throw new InternalServerErrorException('Error during forgot password process');
     }
   }

@@ -11,12 +11,13 @@ import { Controller, Get, Res } from '@nestjs/common';
 import { MulterExceptionFilter } from './core/filters/multer-exception.filter';
 import * as express from 'express';
 import * as fs from 'fs';
+import { Response } from 'express';
 
 @Controller()
 export class AppController {
   @Get('test-client.html')
-  getTestClient(@Res() res) {
-    return res.sendFile(join(__dirname, '..', 'public', 'test-client.html'));
+  getTestClient(@Res({ passthrough: true }) res: Response) {
+    res.sendFile(join(__dirname, '..', 'public', 'test-client.html'));
   }
 }
 
@@ -74,4 +75,4 @@ async function bootstrap() {
   console.log(`🚀 Server is running on http://localhost:${port}`);
   console.log(`📜 Swagger Docs: http://localhost:${port}/api/docs`);
 }
-bootstrap();
+void bootstrap();

@@ -8,7 +8,8 @@ export class LoggerMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     const startTime = Date.now();
-    const { method, originalUrl, ip, body } = req;
+    const { method, originalUrl, ip } = req;
+    const body = req.body;
 
     // Log request
     this.logger.log(`Incoming Request: ${method} ${originalUrl} from ${ip}`, {

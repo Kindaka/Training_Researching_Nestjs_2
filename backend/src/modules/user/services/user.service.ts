@@ -57,8 +57,8 @@ export class UserService {
     );
   }
 
-  async findByEmail(email: string) {
-    return this.queryBus.execute(new GetUserByEmailQuery(email));
+  async findByEmail(email: string): Promise<User | undefined> {
+    return this.userRepository.findOne({ where: { email } });
   }
 
   async remove(id: number, currentUser: User) {

@@ -6,6 +6,9 @@ import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { CustomLoggerService } from '../logger/custom-logger.service';
 import { UserService } from '../../modules/user/services/user.service';
+import { User } from '../../modules/user/entities/user.entity';
+import { JwtPayload } from '../../modules/auth/interfaces/jwt-payload.interface';
+
 
 @Injectable()
 export class AuthGuard {
@@ -28,7 +31,7 @@ export class AuthGuard {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<Request>();
     this.logger.debug('Checking AuthGuard...');
     
     const token = this.extractTokenFromHeader(request);
@@ -41,10 +44,10 @@ export class AuthGuard {
 
     try {
       const secret = this.configService.get<string>('JWT_SECRET');
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: secret
       });
-      const user = await this.userService.findByEmail(payload.email);
+      const user: User | undefined= await this.userService.findByEmail(payload.email);
       console.log('👤 Found user:', user);
 
       if (!user) {
@@ -52,8 +55,8 @@ export class AuthGuard {
       }
 
       // Gán cả payload và user data vào request
-      request.user = payload;
-      request.currentUser = user;
+      (request as any).user = payload;
+      (request as any).currentUser = user;
       
       console.log('✅ Auth successful - User:', {
         id: user.id,
@@ -63,7 +66,7 @@ export class AuthGuard {
 
       return true;
     } catch (error) {
-      this.logger.error('Invalid authentication token', error.stack);
+      this.logger.error('Invalid authentication token', error instanceof Error ? error.stack : '');
       throw new ForbiddenException('Invalid or expired token');
     }
   }

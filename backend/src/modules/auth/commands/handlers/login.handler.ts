@@ -57,7 +57,7 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error('Error during login', error.stack);
+      this.logger.error('Error during login', (error as Error).stack);
       throw new InternalServerErrorException('Error during login');
     }
   }

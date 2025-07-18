@@ -74,9 +74,10 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
       } catch (emailError) {
         this.logger.error(
           `Failed to send welcome email to ${savedUser.email}`,
-          emailError.stack
+          (emailError as Error).stack
         );
       }
+      
 
       // Generate token
       const payload: JwtPayload = {
@@ -99,7 +100,7 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
         }
       };
     } catch (error) {
-      this.logger.error('Registration failed', error.stack);
+      this.logger.error('Registration failed', (error as Error).stack);
       if (error instanceof BadRequestException) {
         throw error;
       }
