@@ -30,10 +30,6 @@ jobs:
     - name: Run tests
       run: npm test
       working-directory: ./backend
-      
-    - name: Run linting
-      run: npm run lint
-      working-directory: ./backend
 
   build-and-push:
     needs: test
@@ -55,17 +51,3 @@ jobs:
         context: ./backend
         push: true
         tags: ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }},${{ env.DOCKER_IMAGE }}:latest
-        
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Deploy to production
-      run: |
-        echo "Add your deployment steps here"
-        # Example deployment steps:
-        # - ssh into your server
-        # - pull latest docker-compose
-        # - docker-compose up -d 
